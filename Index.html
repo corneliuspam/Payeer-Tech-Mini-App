@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PAYEER TECH</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+:root{
+  --green:#16a34a;
+  --dark:#020617;
+  --light:#ffffff;
+  --gray:#e5e7eb;
+  --shadow:0 10px 25px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:linear-gradient(180deg,#020617,#064e3b);
+  color:#fff;
+}
+header{
+  background:#020617;
+  padding:16px;
+  text-align:center;
+  font-weight:700;
+  letter-spacing:1px;
+}
+.page{
+  display:none;
+  padding:16px 14px 100px;
+}
+.page.active{display:block}
+.card{
+  background:#fff;
+  color:#000;
+  margin-bottom:16px;
+  padding:18px;
+  border-radius:22px;
+  box-shadow:var(--shadow);
+}
+.balance{
+  background:linear-gradient(135deg,#16a34a,#22c55e);
+  color:#fff;
+  text-align:center;
+}
+.profile{
+  display:flex;
+  align-items:center;
+}
+.profile img{
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  margin-right:15px;
+}
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:16px;
+  background:var(--green);
+  color:#fff;
+  font-weight:600;
+  margin-top:10px;
+}
+input{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:1px solid #ccc;
+  margin-top:10px;
+}
+.task{
+  border-bottom:1px solid #eee;
+  padding:12px 0;
+}
+.task:last-child{border:none}
+
+/* BOTTOM NAV */
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  background:#020617;
+  display:flex;
+  border-top:1px solid #1e293b;
+}
+.bottom-nav div{
+  flex:1;
+  text-align:center;
+  padding:8px 0;
+  font-size:11px;
+  color:#94a3b8;
+}
+.bottom-nav div.active{
+  color:#22c55e;
+}
+.icon{
+  display:block;
+  font-size:22px;
+  margin-bottom:2px;
+}
+</style>
+</head>
+
+<body>
+
+<header>PAYEER TECH</header>
+
+<!-- DASHBOARD -->
+<div class="page active" id="dashboard">
+  <div class="card profile">
+    <img id="photo">
+    <div>
+      <strong id="name"></strong><br>
+      ID: <span id="uid"></span>
+    </div>
+  </div>
+
+  <div class="card balance">
+    <h3>Wallet Balance</h3>
+    <h1>₦<span id="balance">0</span></h1>
+  </div>
+
+  <div class="card">
+    <h3>📢 Announcement</h3>
+    <p id="announcement">Loading...</p>
+  </div>
+</div>
+
+<!-- TASKS -->
+<div class="page" id="tasks">
+  <div class="card">
+    <h3>📝 Available Tasks</h3>
+    <div id="taskList">Loading...</div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div class="page" id="chat">
+  <div class="card">
+    <h3>💬 Community Chat</h3>
+    <p>Chat with other PAYEER TECH users</p>
+    <button onclick="window.open('https://t.me/YOUR_GROUP')">Open Chat</button>
+  </div>
+</div>
+
+<!-- REFERRAL -->
+<div class="page" id="referral">
+  <div class="card">
+    <h3>👥 Referral Program</h3>
+    <p>Earn ₦1000 per referral</p>
+    <input id="refLink" readonly>
+    <button onclick="copyRef()">Copy Referral Link</button>
+  </div>
+</div>
+
+<!-- WITHDRAW -->
+<div class="page" id="withdraw">
+  <div class="card">
+    <h3>💸 Withdrawal</h3>
+    <p id="subStatus"></p>
+    <input id="amount" placeholder="Minimum ₦5000">
+    <button onclick="withdraw()">Request Withdrawal</button>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="profile">
+  <div class="card">
+    <h3>👤 Profile</h3>
+    <p>Name: <span id="pname"></span></p>
+    <p>User ID: <span id="pid"></span></p>
+    <p>Total Earned: ₦<span id="earned">0</span></p>
+  </div>
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<div class="bottom-nav">
+  <div class="active" onclick="openPage('dashboard',this)">
+    <span class="icon">🏠</span>Home
+  </div>
+  <div onclick="openPage('tasks',this)">
+    <span class="icon">📝</span>Tasks
+  </div>
+  <div onclick="openPage('chat',this)">
+    <span class="icon">💬</span>Chat
+  </div>
+  <div onclick="openPage('referral',this)">
+    <span class="icon">👥</span>Refer
+  </div>
+  <div onclick="openPage('withdraw',this)">
+    <span class="icon">💸</span>Withdraw
+  </div>
+  <div onclick="openPage('profile',this)">
+    <span class="icon">👤</span>Profile
+  </div>
+</div>
+
+<script>
+const API_URL = "https://payeer-tech-production.up.railway.app/api
+
+const tg = window.Telegram.WebApp;
+tg.expand();
+const user = tg.initDataUnsafe.user;
+
+photo.src = user.photo_url;
+name.innerText = user.first_name;
+uid.innerText = user.id;
+pname.innerText = user.first_name;
+pid.innerText = user.id;
+
+refLink.value = `https://t.me/YOUR_BOT?start=${user.id}`;
+
+fetch(`${API_URL}/user/login`,{
+  method:"POST",
+  headers:{\"Content-Type\":\"application/json\"},
+  body:JSON.stringify({telegramId:user.id})
+})
+.then(r=>r.json())
+.then(d=>{
+  balance.innerText=d.balance;
+  earned.innerText=d.totalEarned;
+  announcement.innerText=d.announcement;
+  subStatus.innerText=d.subscribed
+    ? \"Subscription Active ✅\"
+    : \"Subscribe ₦2000 before withdrawal\";
+});
+
+fetch(`${API_URL}/tasks`)
+.then(r=>r.json())
+.then(list=>{
+  taskList.innerHTML=\"\";
+  list.forEach(t=>{
+    taskList.innerHTML+=`
+      <div class=\"task\">
+        ${t.title} – ₦${t.amount}
+        <button onclick=\"submitTask('${t._id}')\">Submit</button>
+      </div>`;
+  });
+});
+
+function submitTask(id){
+  fetch(`${API_URL}/task/complete`,{
+    method:\"POST\",
+    headers:{\"Content-Type\":\"application/json\"},
+    body:JSON.stringify({telegramId:user.id,taskId:id})
+  }).then(()=>alert(\"Task submitted\"));}
+
+function withdraw(){
+  fetch(`${API_URL}/withdraw`,{
+    method:\"POST\",
+    headers:{\"Content-Type\":\"application/json\"},
+    body:JSON.stringify({telegramId:user.id,amount:amount.value})
+  }).then(()=>alert(\"Request sent to admin\"));}
+
+function copyRef(){
+  navigator.clipboard.writeText(refLink.value);
+  alert(\"Referral link copied\");}
+
+function openPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.bottom-nav div').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+
+</body>
+</html>

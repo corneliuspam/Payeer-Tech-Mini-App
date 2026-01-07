@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PAYEER TECH – Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --green:#16a34a;
+  --dark:#020617;
+  --light:#ffffff;
+  --gray:#f1f5f9;
+  --shadow:0 12px 30px rgba(0,0,0,.2);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:#f8fafc;
+  color:#020617;
+}
+
+/* LOGIN */
+#login{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#020617,#065f46);
+}
+.login-box{
+  background:#fff;
+  padding:30px;
+  width:90%;
+  max-width:380px;
+  border-radius:24px;
+  box-shadow:var(--shadow);
+}
+.login-box h2{text-align:center}
+.login-box input{
+  width:100%;
+  padding:14px;
+  margin-top:12px;
+  border-radius:14px;
+  border:1px solid #ccc;
+}
+.login-box button{
+  width:100%;
+  margin-top:18px;
+  padding:14px;
+  border:none;
+  border-radius:16px;
+  background:var(--green);
+  color:#fff;
+  font-weight:700;
+}
+
+/* MAIN */
+#panel{display:none}
+header{
+  background:#020617;
+  color:#fff;
+  padding:18px;
+  font-size:18px;
+  font-weight:700;
+}
+.container{
+  padding:16px;
+}
+.card{
+  background:#fff;
+  border-radius:22px;
+  padding:18px;
+  margin-bottom:16px;
+  box-shadow:var(--shadow);
+}
+.stat-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+}
+.stat{
+  background:linear-gradient(135deg,#16a34a,#22c55e);
+  color:#fff;
+  padding:18px;
+  border-radius:20px;
+  text-align:center;
+}
+
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid #e5e7eb;
+  text-align:left;
+}
+button.small{
+  padding:8px 12px;
+  border:none;
+  border-radius:10px;
+  background:var(--green);
+  color:#fff;
+  font-size:12px;
+}
+
+/* NAV */
+.nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  background:#020617;
+  display:flex;
+}
+.nav div{
+  flex:1;
+  text-align:center;
+  padding:10px 0;
+  color:#94a3b8;
+  font-size:12px;
+}
+.nav div.active{color:#22c55e}
+.icon{font-size:20px;display:block}
+.page{display:none}
+.page.active{display:block}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-box">
+    <h2>Admin Login</h2>
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="panel">
+
+<header>PAYEER TECH – Admin Dashboard</header>
+
+<div class="container">
+
+<!-- DASHBOARD -->
+<div class="page active" id="dash">
+  <div class="stat-grid">
+    <div class="stat">
+      <h3>Total Users</h3>
+      <h2 id="users">0</h2>
+    </div>
+    <div class="stat">
+      <h3>Total Balance</h3>
+      <h2>₦<span id="balance">0</span></h2>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📢 Post Announcement</h3>
+    <textarea id="announcement" style="width:100%;height:80px"></textarea>
+    <button onclick="postAnnouncement()">Post</button>
+  </div>
+</div>
+
+<!-- TASKS -->
+<div class="page" id="tasks">
+  <div class="card">
+    <h3>📝 Create Task</h3>
+    <input id="taskTitle" placeholder="Task title">
+    <input id="taskAmount" value="1000" readonly>
+    <button onclick="addTask()">Add Task</button>
+  </div>
+
+  <div class="card">
+    <h3>Pending Task Submissions</h3>
+    <table>
+      <tbody id="taskSubmissions"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- WITHDRAWALS -->
+<div class="page" id="withdrawals">
+  <div class="card">
+    <h3>💸 Withdrawal Requests</h3>
+    <table>
+      <tbody id="withdrawList"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SUBSCRIPTIONS -->
+<div class="page" id="subs">
+  <div class="card">
+    <h3>🔐 Subscription Requests</h3>
+    <table>
+      <tbody id="subList"></tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="active" onclick="openPage('dash',this)">
+    <span class="icon">📊</span>Dashboard
+  </div>
+  <div onclick="openPage('tasks',this)">
+    <span class="icon">📝</span>Tasks
+  </div>
+  <div onclick="openPage('withdrawals',this)">
+    <span class="icon">💸</span>Withdrawals
+  </div>
+  <div onclick="openPage('subs',this)">
+    <span class="icon">🔐</span>Subscriptions
+  </div>
+</div>
+
+</div>
+
+<script>
+/* 🔴 PUT YOUR RAILWAY API HERE */
+const API = "https://YOUR-PROJECT.up.railway.app/api";
+
+/* LOGIN */
+function login(){
+  if(email.value==="corneliuspam8736@gmail.com" && password.value==="2001@pam"){
+    login.style.display="none";
+    panel.style.display="block";
+    loadDashboard();
+  }else{
+    alert("Invalid login");
+  }
+}
+
+/* LOAD DASHBOARD */
+function loadDashboard(){
+  fetch(API+"/admin/stats").then(r=>r.json()).then(d=>{
+    users.innerText=d.users;
+    balance.innerText=d.totalBalance;
+  });
+}
+
+/* ANNOUNCEMENT */
+function postAnnouncement(){
+  fetch(API+"/admin/announcement",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({text:announcement.value})
+  }).then(()=>alert("Posted"));
+}
+
+/* TASKS */
+function addTask(){
+  fetch(API+"/admin/task",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({title:taskTitle.value,amount:1000})
+  }).then(()=>alert("Task added"));
+}
+
+/* NAV */
+function openPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav div').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+
+</body>
+</html>
